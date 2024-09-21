@@ -3,12 +3,13 @@ import React, { useEffect, useState } from "react";
 import { morphHolesky, sapphireTestnet } from "viem/chains";
 import { useAccount } from "wagmi";
 import * as sapphire from "@oasisprotocol/sapphire-paratime";
-import { BrowserProvider, ethers, JsonRpcProvider } from "ethers";
+import { BrowserProvider, ethers, JsonRpcProvider, keccak256 } from "ethers";
 import Image from "next/image";
 import { notifications } from "@mantine/notifications";
 import AppBar from "./AppBar";
 import { fhenix } from "@/app/layout";
 import { EncryptionTypes, FhenixClient, SupportedProvider } from "fhenixjs";
+import { toHex } from "viem";
 
 const getTokenContractAddress = (chainId: number) => {
   switch (chainId) {
@@ -73,7 +74,7 @@ const getMarketABI = (chainId: number) => {
 };
 
 const Home = () => {
-  const { connector, chainId } = useAccount();
+  const { connector, address, chainId } = useAccount();
   const [amount, setAmount] = useState<string>("");
   const [predict, setPredict] = useState<boolean | null>(null);
   const [tvl, setTvl] = useState<string>("0");
@@ -83,6 +84,7 @@ const Home = () => {
   const [payoutLoading, setPayoutLoading] = useState<boolean>(false);
 
   const [showModal, setShowModal] = useState(false);
+  const optionId = ethers.encodeBytes32String("pqivxp");
 
   const handleOpenModal = () => {
     setShowModal(true);
@@ -114,9 +116,6 @@ const Home = () => {
         await (provider as BrowserProvider).getSigner()
       );
       try {
-        const optionId = client.encrypt_address(
-          ("0x" + "1".padStart(64, "0")) as `0x${string}`
-        );
         const totalBet = await market.getTotalBet(optionId);
         console.log("Total Bet:", BigInt(totalBet).toString());
         setTvl(BigInt(totalBet).toString());
@@ -136,7 +135,7 @@ const Home = () => {
       );
 
       try {
-        const optionId = ("0x" + "1".padStart(64, "0")) as `0x${string}`;
+        // const optionId = ("0x" + "1".padStart(64, "0")) as `0x${string}`;
         const totalBet = await market.getTotalBet(optionId);
         console.log("Total Bet:", BigInt(totalBet).toString());
         setTvl(BigInt(totalBet).toString());
@@ -155,7 +154,7 @@ const Home = () => {
       );
 
       try {
-        const optionId = ("0x" + "1".padStart(64, "0")) as `0x${string}`;
+        // const optionId = ("0x" + "1".padStart(64, "0")) as `0x${string}`;
         const totalBet = await market.getTotalBet(optionId);
         console.log("Total Bet:", BigInt(totalBet).toString());
         setTvl(BigInt(totalBet).toString());
@@ -183,9 +182,9 @@ const Home = () => {
         await (provider as BrowserProvider).getSigner()
       );
       try {
-        const optionId = client.encrypt_address(
-          ("0x" + "1".padStart(64, "0")) as `0x${string}`
-        );
+        // const optionId = await client.encrypt_address(
+        // ("0x" + "1".padStart(64, "0")) as `0x${string}`
+        // );
         const secondParam = await client.encrypt_uint32(predict ? 1 : 0);
         const outcomeBet = await market.getOutcomeBet(optionId, secondParam);
         console.log("Outcome Bet:", outcomeBet.toString());
@@ -207,7 +206,7 @@ const Home = () => {
       );
 
       try {
-        const optionId = ("0x" + "1".padStart(64, "0")) as `0x${string}`;
+        // const optionId = ("0x" + "1".padStart(64, "0")) as `0x${string}`;
         const outcomeBet = await market.getOutcomeBet(
           optionId,
           predict ? 1 : 0
@@ -228,7 +227,7 @@ const Home = () => {
       );
 
       try {
-        const optionId = ("0x" + "1".padStart(64, "0")) as `0x${string}`;
+        // const optionId = ("0x" + "1".padStart(64, "0")) as `0x${string}`;
         const outcomeBet = await market.getOutcomeBet(
           optionId,
           predict ? 1 : 0
@@ -242,9 +241,11 @@ const Home = () => {
 
   const predictAmount = async () => {
     if (chainId == fhenix.id) {
-      const provider = new ethers.BrowserProvider(
-        (await connector?.getProvider()) as any
-      ) as SupportedProvider;
+      // const provider = new ethers.BrowserProvider(
+      //   (await connector?.getProvider()) as any
+      // ) as SupportedProvider;
+
+      const provider = new ethers.BrowserProvider(window.ethereum);
 
       // initialize Fhenix Client
       const client = new FhenixClient({ provider });
@@ -263,25 +264,20 @@ const Home = () => {
 
       try {
         setPredictLoading(true);
-        const tokenRes = await token.approve(
-          getMarketContractAddress(chainId),
-          BigInt(amount)
-        );
+        // const tokenRes = await token.wrap(BigInt(amount));
+        // await tokenRes.wait();
+        // console.log("Token res", tokenRes.hash);
 
-        console.log("Token res", tokenRes.hash);
-
-        const optionId = client.encrypt_address(
-          ("0x" + "1".padStart(64, "0")) as `0x${string}`
-        );
-        const param2 = client.encrypt_uint32(predict ? 1 : 0);
-        const param3 = client.encrypt_uint32(Number(amount));
+        // const optionId = ethers.encodeBytes32String("804kb");
+        const param2 = await client.encrypt_uint32(predict ? 0 : 1);
+        const param3 = await client.encrypt_uint32(Number(amount));
         const placeBetRes = await market.predict(optionId, param2, param3);
 
         console.log("Place Bet Successful : ", placeBetRes.hash);
         setPredictLoading(false);
       } catch (error) {
         setPredictLoading(false);
-        console.error("Error fetching Total Bet:", error);
+        console.error("Error predicting:", error);
       }
     } else if (chainId === sapphireTestnet.id) {
       const provider = new ethers.BrowserProvider(
@@ -310,7 +306,7 @@ const Home = () => {
 
         console.log("Token res", tokenRes.hash);
 
-        const optionId = ("0x" + "1".padStart(64, "0")) as `0x${string}`;
+        // const optionId = ("0x" + "1".padStart(64, "0")) as `0x${string}`;
         const placeBetRes = await market.predict(
           optionId,
           predict ? 1 : 0,
@@ -349,7 +345,7 @@ const Home = () => {
 
         console.log("Token res", tokenRes.hash);
 
-        const optionId = ("0x" + "1".padStart(64, "0")) as `0x${string}`;
+        // const optionId = ("0x" + "1".padStart(64, "0")) as `0x${string}`;
         const placeBetRes = await market.predict(
           optionId,
           predict ? 1 : 0,
@@ -382,9 +378,9 @@ const Home = () => {
 
       try {
         setPayoutLoading(true);
-        const optionId = client.encrypt_address(
-          ("0x" + "1".padStart(64, "0")) as `0x${string}`
-        );
+        // const optionId = await client.encrypt_address(
+        // ("0x" + "1".padStart(64, "0")) as `0x${string}`
+        // );
         const payOutRes = await market.payout(optionId);
 
         setPayoutLoading(false);
@@ -409,7 +405,7 @@ const Home = () => {
 
       try {
         setPayoutLoading(true);
-        const optionId = ("0x" + "1".padStart(64, "0")) as `0x${string}`;
+        // const optionId = ("0x" + "1".padStart(64, "0")) as `0x${string}`;
         const payOutRes = await market.payout(optionId);
 
         setPayoutLoading(false);
@@ -432,7 +428,7 @@ const Home = () => {
 
       try {
         setPayoutLoading(true);
-        const optionId = ("0x" + "1".padStart(64, "0")) as `0x${string}`;
+        // const optionId = ("0x" + "1".padStart(64, "0")) as `0x${string}`;
         const payOutRes = await market.payout(optionId);
 
         setPayoutLoading(false);
@@ -459,7 +455,7 @@ const Home = () => {
       );
 
       try {
-        const optionId = ("0x" + "1".padStart(64, "0")) as `0x${string}`;
+        // const optionId = ("0x" + "1".padStart(64, "0")) as `0x${string}`;
         const placeBetRes = await market.getCurrentExpectedReturn(optionId);
 
         console.log("Place Bet Successful : ", placeBetRes.toString());
@@ -485,11 +481,9 @@ const Home = () => {
       );
 
       try {
-        const optionId = client.encrypt_address(
-          ("0x" + "1".padStart(64, "0")) as `0x${string}`
-        );
-        const param2 = client.encrypt_uint32(predict ? 1 : 0);
-        const param3 = client.encrypt_uint32(Number(amount));
+        // const optionId = ethers.encodeBytes32String("f1");
+        const param2 = predict ? 1 : 0;
+        const param3 = Number(amount);
         const returnsVal = await market.getFutureExpectedReturn(
           optionId,
           param2,
@@ -499,7 +493,7 @@ const Home = () => {
         console.log("Future expected returns: ", returnsVal.toString());
         setReturns(returnsVal.toString());
       } catch (error) {
-        console.error("Error fetching Total Bet:", error);
+        console.error("Error fetching future returns:", error);
       }
     } else if (chainId === sapphireTestnet.id) {
       const provider = new ethers.BrowserProvider(
@@ -514,7 +508,7 @@ const Home = () => {
       );
 
       try {
-        const optionId = ("0x" + "1".padStart(64, "0")) as `0x${string}`;
+        // const optionId = ("0x" + "1".padStart(64, "0")) as `0x${string}`;
         const returnsVal = await market.getFutureExpectedReturn(
           optionId,
           predict ? 1 : 0,
@@ -538,7 +532,7 @@ const Home = () => {
       );
 
       try {
-        const optionId = ("0x" + "1".padStart(64, "0")) as `0x${string}`;
+        // const optionId = ("0x" + "1".padStart(64, "0")) as `0x${string}`;
         const returnsVal = await market.getFutureExpectedReturn(
           optionId,
           predict ? 1 : 0,
