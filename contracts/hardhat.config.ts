@@ -22,12 +22,13 @@ const config: HardhatUserConfig = {
     "airdao-testnet" : {
       url : "https://network.ambrosus-test.io",
       accounts : PRIVATE_KEY ? [PRIVATE_KEY] : [],
+      chainId: 0x5618,
     },
     "morph-testnet" : {
       url : "https://rpc-holesky.morphl2.io",
       accounts : PRIVATE_KEY ? [PRIVATE_KEY] : [],
       chainId : 0xafa,
-    }
+    }  
   },
 };
 

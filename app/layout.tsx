@@ -53,6 +53,22 @@ const fhenix1 = {
   vanityName: "Fhenix",
 };
 
+const airdao = {
+  blockExplorerUrls: ["https://testnet.airdao.io/explorer/"],
+  chainId: 22040,
+  chainName: "AirDao",
+  iconUrls: ["https://app.dynamic.xyz/assets/networks/eth.svg"],
+  name: "AirDao",
+  networkId: 22040,
+  nativeCurrency: {
+    decimals: 18,
+    name: "AMB",
+    symbol: "AMB",
+  },
+  rpcUrls: ["https://network.ambrosus-test.io"],
+  vanityName: "AirDao",
+};
+
 const config = createConfig({
   chains: [sapphireTestnet, fhenix, morphHolesky],
   multiInjectedProviderDiscovery: false,
@@ -93,6 +109,10 @@ export default function RootLayout({
         settings={{
           environmentId: dynamicEnvId,
           walletConnectors: [EthereumWalletConnectors],
+          overrides: {
+            evmNetworks: (networks) =>
+              Array.from(new Set([fhenix1, airdao, ...networks])),
+          },
         }}
       >
         <WagmiProvider config={config}>

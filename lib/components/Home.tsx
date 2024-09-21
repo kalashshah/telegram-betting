@@ -11,13 +11,13 @@ import AppBar from "./AppBar";
 const getTokenContractAddress = (chainId: number) => {
   switch (chainId) {
     case sapphireTestnet.id:
-      return "0xA984DBf2Bfa58Fe59B42730450338404B6702973";
-
+      return "0xf551eb1842350d05b35A8475A0dA8d4cE88FCF67";
     case morphHolesky.id:
-      return "0x887eca7008180b6e7c0f8904e1ed0c529aa6a84c";
-
-    // case 22040:
-    //   return "AIRDAO_TESTNET_ADDRESS";
+      return "0xd15894fd344908c83ae39719fc551b1b5b0faddb";
+    //AIRDAO
+    case 22040:
+      return "0xcc4a6407b36120f21ff21d0f7eef23dbead2a977";
+    //TODO : Add FHENIX
     default:
       return "";
   }
@@ -36,10 +36,14 @@ const getTokenABI = (chainId: number) => {
 const getMarketContractAddress = (chainId: number) => {
   switch (chainId) {
     case sapphireTestnet.id:
-      return "0x3915791b77Cf27221334890e4f088E5a6c950054";
+      return "0xB2f03BcF3433C91cD845E54f706C12041409D3C2";
 
     case morphHolesky.id:
-      return "0xb150f32383d2a8dbfdcd35b99ce805833560c074";
+      return "0x3915791b77cf27221334890e4f088e5a6c950054";
+
+    //Airdao
+    case 22040:
+      return "0x7ba34df70a46bf83ddb29801a7ee9a2a3d312e4b";
     default:
       return "";
   }
@@ -267,14 +271,15 @@ const Home = () => {
   }, [amount]);
 
   return (
-    <div
-      onClick={() => {
-        if (showModal) {
-          setShowModal(false);
-        }
-      }}
-    >
-      <div className="w-full h-full px-6flex flex-col items-start justify-start">
+    <div>
+      <div
+        className="w-full h-full px-6flex flex-col items-start justify-start"
+        onClick={() => {
+          if (showModal) {
+            setShowModal(false);
+          }
+        }}
+      >
         {[1].map((cardNumber) => (
           <div
             className=" ml-10 mr-10 my-10 bg-white shadow-lg rounded-lg overflow-hidden"

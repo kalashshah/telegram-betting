@@ -5,6 +5,11 @@
         "internalType": "address",
         "name": "_token",
         "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_disputeResolver",
+        "type": "address"
       }
     ],
     "stateMutability": "nonpayable",
@@ -31,6 +36,19 @@
     "name": "addOption",
     "outputs": [],
     "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "disputeResolver",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
     "type": "function"
   },
   {
@@ -313,6 +331,24 @@
       }
     ],
     "name": "predict",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "bytes32",
+        "name": "id",
+        "type": "bytes32"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_outcome",
+        "type": "uint256"
+      }
+    ],
+    "name": "resolveDispute",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

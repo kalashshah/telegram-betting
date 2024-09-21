@@ -18,7 +18,6 @@ export default function Main() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
-    console.log("hfsfdsfsdfds");
     if (!sdkHasLoaded) return;
 
     const signIn = async () => {
@@ -32,7 +31,6 @@ export default function Main() {
   }, [sdkHasLoaded]);
 
   useEffect(() => {
-    console.log("abcd");
     (async () => {
       if (await primaryWallet?.isConnected()) {
         setIsLoggedIn(true);
