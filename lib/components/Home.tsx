@@ -7,6 +7,7 @@ import { ethers } from "ethers";
 import Image from "next/image";
 import { notifications } from "@mantine/notifications";
 import AppBar from "./AppBar";
+import { fhenix } from "@/app/layout";
 
 const getTokenContractAddress = (chainId: number) => {
   switch (chainId) {
@@ -17,7 +18,8 @@ const getTokenContractAddress = (chainId: number) => {
     //AIRDAO
     case 22040:
       return "0xcc4a6407b36120f21ff21d0f7eef23dbead2a977";
-    //TODO : Add FHENIX
+    case fhenix.id:
+      return "0x7ec256Ea16eF0A69f3F09D62c7bdf00B1FEA5221";    //TODO : Add FHENIX
     default:
       return "";
   }
@@ -27,6 +29,9 @@ const getTokenABI = (chainId: number) => {
   switch (chainId) {
     case sapphireTestnet.id:
       return require("../abi/oasis-token-abi.json");
+    
+    case fhenix.id:
+      return require("../abi/fhenix-token-abi.json");
 
     default:
       return require("../abi/oasis-token-abi.json");
@@ -44,6 +49,10 @@ const getMarketContractAddress = (chainId: number) => {
     //Airdao
     case 22040:
       return "0x7ba34df70a46bf83ddb29801a7ee9a2a3d312e4b";
+
+    case fhenix.id:
+      return "0x82C8EA036545e8B12D1F8647eee6BbA59943a010";
+
     default:
       return "";
   }
@@ -53,6 +62,9 @@ const getMarketABI = (chainId: number) => {
   switch (chainId) {
     case sapphireTestnet.id:
       return require("../abi/oasis-market-abi.json");
+
+    case fhenix.id:
+      return require("../abi/fhenix-market-abi.json");
 
     default:
       return require("../abi/oasis-market-abi.json");
@@ -84,6 +96,9 @@ const Home = () => {
   }, [chainId, connector]);
 
   const getTVL = async () => {
+
+
+
     if (chainId === sapphireTestnet.id) {
       const provider = new ethers.BrowserProvider(
         (await connector?.getProvider()) as any

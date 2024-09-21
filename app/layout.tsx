@@ -16,7 +16,7 @@ const dynamicEnvId = process.env.NEXT_PUBLIC_DYNAMIC_ENV_ID;
 
 const queryClient = new QueryClient();
 
-const fhenix = defineChain({
+export const fhenix = defineChain({
   blockExplorers: {
     default: {
       name: "Fhenix Explorer",
