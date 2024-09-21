@@ -3,29 +3,33 @@ import hre from "hardhat";
   async function doAllDeploymentsForChain() {
     //first deploy erc20 
     const [owner, otherAccount] = await hre.viem.getWalletClients();
-    const mytoken = await hre.viem.deployContract("MyToken");
-    console.log("MyToken deployed at address", mytoken.address);
-    const myTokenAddress = mytoken.address
+    // const mytoken = await hre.viem.deployContract("MyToken");
+    // console.log("MyToken deployed at address", mytoken.address);
+    // const myTokenAddress = mytoken.address
     
     //then deploy dispute resolution
-    const disputeResolution = await hre.viem.deployContract("DisputeResolution",[]);
-    console.log("DisputeResolution deployed at address : ", disputeResolution.address);
-    const disputeResolutionAddress = disputeResolution.address;
+    // const disputeResolution = await hre.viem.deployContract("DisputeResolution",[]);
+    // console.log("DisputeResolution deployed at address : ", disputeResolution.address);
+    // const disputeResolutionAddress = disputeResolution.address;
     
     //then deploy market contract
-    const market = await hre.viem.deployContract("Market", [myTokenAddress, disputeResolutionAddress]);
+    const myTokenAddress = "0xcc4a6407b36120f21ff21d0f7eef23dbead2a977";
+    const disputeResolutionAddress = "0xf3c05f8f1271868e925535c5731a53d310c7c4f5";
+    const market = await hre.viem.deployContract("MarketAirDao", [myTokenAddress, disputeResolutionAddress]);
     const marketAddress = market.address;
     console.log("Market deployed at address", market.address);
 
     //Now add market contract to disputeResolutionContract
-    const disputeResolutionContract = await hre.viem.getContractAt("DisputeResolution", disputeResolutionAddress);
-    await disputeResolutionContract.write.setAddress([marketAddress], { account: owner.account })
+    // const disputeResolutionContract = await hre.viem.getContractAt("DisputeResolution", disputeResolutionAddress);
+    // await disputeResolutionContract.write.setAddress([marketAddress], { account: owner.account })
 
-    console.log("For the current chain the deployments are : ");
-    console.log("TOKEN ADDRESS ", myTokenAddress);
-    console.log("DisputeContract Address", disputeResolutionAddress);
-    console.log("Market Contract Address",marketAddress )
+    // console.log("For the current chain the deployments are : ");
+    // console.log("TOKEN ADDRESS ", myTokenAddress);
+    // console.log("DisputeContract Address", disputeResolutionAddress);
+    // console.log("Market Contract Address",marketAddress )
   }
+
+
 
   doAllDeploymentsForChain();
 

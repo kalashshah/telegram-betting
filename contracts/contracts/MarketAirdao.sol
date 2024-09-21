@@ -8,7 +8,7 @@ interface IDisputeResolution {
     function setVotingSettings(bytes32 id, uint outcome) external;
 }
 
-contract Market {
+contract MarketAirDao {
     address public owner;
     address public token;
     address public disputeResolver;
