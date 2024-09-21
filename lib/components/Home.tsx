@@ -3,11 +3,13 @@ import React, { useEffect, useState } from "react";
 import { morphHolesky, sapphireTestnet } from "viem/chains";
 import { useAccount } from "wagmi";
 import * as sapphire from "@oasisprotocol/sapphire-paratime";
-import { ethers } from "ethers";
+import { BrowserProvider, ethers, JsonRpcProvider, keccak256 } from "ethers";
 import Image from "next/image";
 import { notifications } from "@mantine/notifications";
 import AppBar from "./AppBar";
 import { fhenix } from "@/app/layout";
+import { EncryptionTypes, FhenixClient, SupportedProvider } from "fhenixjs";
+import { toHex } from "viem";
 
 const getTokenContractAddress = (chainId: number) => {
   switch (chainId) {
@@ -19,7 +21,7 @@ const getTokenContractAddress = (chainId: number) => {
     case 22040:
       return "0xcc4a6407b36120f21ff21d0f7eef23dbead2a977";
     case fhenix.id:
-      return "0x7ec256Ea16eF0A69f3F09D62c7bdf00B1FEA5221";    //TODO : Add FHENIX
+      return "0x7ec256Ea16eF0A69f3F09D62c7bdf00B1FEA5221"; //TODO : Add FHENIX
     default:
       return "";
   }
@@ -29,7 +31,7 @@ const getTokenABI = (chainId: number) => {
   switch (chainId) {
     case sapphireTestnet.id:
       return require("../abi/oasis-token-abi.json");
-    
+
     case fhenix.id:
       return require("../abi/fhenix-token-abi.json");
 
@@ -72,7 +74,7 @@ const getMarketABI = (chainId: number) => {
 };
 
 const Home = () => {
-  const { connector, chainId } = useAccount();
+  const { connector, address, chainId } = useAccount();
   const [amount, setAmount] = useState<string>("");
   const [predict, setPredict] = useState<boolean | null>(null);
   const [tvl, setTvl] = useState<string>("0");
@@ -82,6 +84,7 @@ const Home = () => {
   const [payoutLoading, setPayoutLoading] = useState<boolean>(false);
 
   const [showModal, setShowModal] = useState(false);
+  const optionId = ethers.encodeBytes32String("pqivxp");
 
   const handleOpenModal = () => {
     setShowModal(true);
@@ -96,10 +99,30 @@ const Home = () => {
   }, [chainId, connector]);
 
   const getTVL = async () => {
+    if (chainId == fhenix.id) {
+      //TODO : Add contract call
 
+      // initialize your web3 provider
+      const provider = new ethers.BrowserProvider(
+        (await connector?.getProvider()) as any
+      ) as SupportedProvider;
 
+      // initialize Fhenix Client
+      const client = new FhenixClient({ provider });
 
-    if (chainId === sapphireTestnet.id) {
+      const market = new ethers.Contract(
+        getMarketContractAddress(chainId),
+        getMarketABI(chainId),
+        await (provider as BrowserProvider).getSigner()
+      );
+      try {
+        const totalBet = await market.getTotalBet(optionId);
+        console.log("Total Bet:", BigInt(totalBet).toString());
+        setTvl(BigInt(totalBet).toString());
+      } catch (error) {
+        console.error("Error fetching Total Bet:", error);
+      }
+    } else if (chainId === sapphireTestnet.id) {
       const provider = new ethers.BrowserProvider(
         (await connector?.getProvider()) as any
       );
@@ -112,7 +135,26 @@ const Home = () => {
       );
 
       try {
-        const optionId = ("0x" + "1".padStart(64, "0")) as `0x${string}`;
+        // const optionId = ("0x" + "1".padStart(64, "0")) as `0x${string}`;
+        const totalBet = await market.getTotalBet(optionId);
+        console.log("Total Bet:", BigInt(totalBet).toString());
+        setTvl(BigInt(totalBet).toString());
+      } catch (error) {
+        console.error("Error fetching Total Bet:", error);
+      }
+    } else {
+      //TODO : add normal call
+      const provider = new ethers.BrowserProvider(
+        (await connector?.getProvider()) as any
+      );
+      const market = new ethers.Contract(
+        getMarketContractAddress(chainId!),
+        getMarketABI(chainId!),
+        await provider.getSigner()
+      );
+
+      try {
+        // const optionId = ("0x" + "1".padStart(64, "0")) as `0x${string}`;
         const totalBet = await market.getTotalBet(optionId);
         console.log("Total Bet:", BigInt(totalBet).toString());
         setTvl(BigInt(totalBet).toString());
@@ -123,6 +165,34 @@ const Home = () => {
   };
 
   const getOutcomeBet = async () => {
+    if (chainId == fhenix.id) {
+      //TODO : Add contract call
+
+      // initialize your web3 provider
+      const provider = new ethers.BrowserProvider(
+        (await connector?.getProvider()) as any
+      ) as SupportedProvider;
+
+      // initialize Fhenix Client
+      const client = new FhenixClient({ provider });
+
+      const market = new ethers.Contract(
+        getMarketContractAddress(chainId),
+        getMarketABI(chainId),
+        await (provider as BrowserProvider).getSigner()
+      );
+      try {
+        // const optionId = await client.encrypt_address(
+        // ("0x" + "1".padStart(64, "0")) as `0x${string}`
+        // );
+        const secondParam = await client.encrypt_uint32(predict ? 1 : 0);
+        const outcomeBet = await market.getOutcomeBet(optionId, secondParam);
+        console.log("Outcome Bet:", outcomeBet.toString());
+      } catch (error) {
+        console.error("Error fetching Total Bet:", error);
+      }
+    }
+
     if (chainId === sapphireTestnet.id) {
       const provider = new ethers.BrowserProvider(
         (await connector?.getProvider()) as any
@@ -136,7 +206,28 @@ const Home = () => {
       );
 
       try {
-        const optionId = ("0x" + "1".padStart(64, "0")) as `0x${string}`;
+        // const optionId = ("0x" + "1".padStart(64, "0")) as `0x${string}`;
+        const outcomeBet = await market.getOutcomeBet(
+          optionId,
+          predict ? 1 : 0
+        );
+        console.log("Outcome Bet:", outcomeBet.toString());
+      } catch (error) {
+        console.error("Error fetching Total Bet:", error);
+      }
+    } else {
+      const provider = new ethers.BrowserProvider(
+        (await connector?.getProvider()) as any
+      );
+
+      const market = new ethers.Contract(
+        getMarketContractAddress(chainId!),
+        getMarketABI(chainId!),
+        provider
+      );
+
+      try {
+        // const optionId = ("0x" + "1".padStart(64, "0")) as `0x${string}`;
         const outcomeBet = await market.getOutcomeBet(
           optionId,
           predict ? 1 : 0
@@ -149,7 +240,46 @@ const Home = () => {
   };
 
   const predictAmount = async () => {
-    if (chainId === sapphireTestnet.id || chainId === morphHolesky.id) {
+    if (chainId == fhenix.id) {
+      // const provider = new ethers.BrowserProvider(
+      //   (await connector?.getProvider()) as any
+      // ) as SupportedProvider;
+
+      const provider = new ethers.BrowserProvider(window.ethereum);
+
+      // initialize Fhenix Client
+      const client = new FhenixClient({ provider });
+
+      const market = new ethers.Contract(
+        getMarketContractAddress(chainId),
+        getMarketABI(chainId),
+        await (provider as BrowserProvider).getSigner()
+      );
+
+      const token = new ethers.Contract(
+        getTokenContractAddress(chainId) as string,
+        getTokenABI(chainId),
+        await (provider as BrowserProvider).getSigner()
+      );
+
+      try {
+        setPredictLoading(true);
+        // const tokenRes = await token.wrap(BigInt(amount));
+        // await tokenRes.wait();
+        // console.log("Token res", tokenRes.hash);
+
+        // const optionId = ethers.encodeBytes32String("804kb");
+        const param2 = await client.encrypt_uint32(predict ? 0 : 1);
+        const param3 = await client.encrypt_uint32(Number(amount));
+        const placeBetRes = await market.predict(optionId, param2, param3);
+
+        console.log("Place Bet Successful : ", placeBetRes.hash);
+        setPredictLoading(false);
+      } catch (error) {
+        setPredictLoading(false);
+        console.error("Error predicting:", error);
+      }
+    } else if (chainId === sapphireTestnet.id) {
       const provider = new ethers.BrowserProvider(
         (await connector?.getProvider()) as any
       );
@@ -176,7 +306,46 @@ const Home = () => {
 
         console.log("Token res", tokenRes.hash);
 
-        const optionId = ("0x" + "1".padStart(64, "0")) as `0x${string}`;
+        // const optionId = ("0x" + "1".padStart(64, "0")) as `0x${string}`;
+        const placeBetRes = await market.predict(
+          optionId,
+          predict ? 1 : 0,
+          BigInt(amount)
+        );
+
+        console.log("Place Bet Successful : ", placeBetRes.hash);
+        setPredictLoading(false);
+      } catch (error) {
+        setPredictLoading(false);
+        console.error("Error fetching Total Bet:", error);
+      }
+    } else {
+      const provider = new ethers.BrowserProvider(
+        (await connector?.getProvider()) as any
+      );
+
+      const market = new ethers.Contract(
+        getMarketContractAddress(chainId!),
+        getMarketABI(chainId!),
+        await provider.getSigner()
+      );
+
+      const token = new ethers.Contract(
+        getTokenContractAddress(chainId!) as string,
+        getTokenABI(chainId!),
+        await provider.getSigner()
+      );
+
+      try {
+        setPredictLoading(true);
+        const tokenRes = await token.approve(
+          getMarketContractAddress(chainId!),
+          BigInt(amount)
+        );
+
+        console.log("Token res", tokenRes.hash);
+
+        // const optionId = ("0x" + "1".padStart(64, "0")) as `0x${string}`;
         const placeBetRes = await market.predict(
           optionId,
           predict ? 1 : 0,
@@ -193,6 +362,35 @@ const Home = () => {
   };
 
   const payOut = async () => {
+    if (chainId == fhenix.id) {
+      const provider = new ethers.BrowserProvider(
+        (await connector?.getProvider()) as any
+      ) as SupportedProvider;
+
+      // initialize Fhenix Client
+      const client = new FhenixClient({ provider });
+
+      const market = new ethers.Contract(
+        getMarketContractAddress(chainId),
+        getMarketABI(chainId),
+        await (provider as BrowserProvider).getSigner()
+      );
+
+      try {
+        setPayoutLoading(true);
+        // const optionId = await client.encrypt_address(
+        // ("0x" + "1".padStart(64, "0")) as `0x${string}`
+        // );
+        const payOutRes = await market.payout(optionId);
+
+        setPayoutLoading(false);
+
+        console.log("Place Bet Successful : ", payOutRes.toString());
+      } catch (error) {
+        setPayoutLoading(false);
+        console.error("Error fetching Total Bet:", error);
+      }
+    }
     if (chainId === sapphireTestnet.id) {
       const provider = new ethers.BrowserProvider(
         (await connector?.getProvider()) as any
@@ -207,7 +405,30 @@ const Home = () => {
 
       try {
         setPayoutLoading(true);
-        const optionId = ("0x" + "1".padStart(64, "0")) as `0x${string}`;
+        // const optionId = ("0x" + "1".padStart(64, "0")) as `0x${string}`;
+        const payOutRes = await market.payout(optionId);
+
+        setPayoutLoading(false);
+
+        console.log("Place Bet Successful : ", payOutRes.toString());
+      } catch (error) {
+        setPayoutLoading(false);
+        console.error("Error fetching Total Bet:", error);
+      }
+    } else {
+      const provider = new ethers.BrowserProvider(
+        (await connector?.getProvider()) as any
+      );
+
+      const market = new ethers.Contract(
+        getMarketContractAddress(chainId!),
+        getMarketABI(chainId!),
+        await provider.getSigner()
+      );
+
+      try {
+        setPayoutLoading(true);
+        // const optionId = ("0x" + "1".padStart(64, "0")) as `0x${string}`;
         const payOutRes = await market.payout(optionId);
 
         setPayoutLoading(false);
@@ -234,7 +455,7 @@ const Home = () => {
       );
 
       try {
-        const optionId = ("0x" + "1".padStart(64, "0")) as `0x${string}`;
+        // const optionId = ("0x" + "1".padStart(64, "0")) as `0x${string}`;
         const placeBetRes = await market.getCurrentExpectedReturn(optionId);
 
         console.log("Place Bet Successful : ", placeBetRes.toString());
@@ -245,10 +466,36 @@ const Home = () => {
   };
 
   const getFutureExpectedReturn = async () => {
-    console.log("KALASH LOVES CODING", chainId);
+    if (chainId === fhenix.id) {
+      const provider = new ethers.BrowserProvider(
+        (await connector?.getProvider()) as any
+      ) as SupportedProvider;
 
-    if (chainId === sapphireTestnet.id || chainId === morphHolesky.id) {
-      console.log("KALASH LOVES CODING 1");
+      // initialize Fhenix Client
+      const client = new FhenixClient({ provider });
+
+      const market = new ethers.Contract(
+        getMarketContractAddress(chainId),
+        getMarketABI(chainId),
+        await (provider as BrowserProvider).getSigner()
+      );
+
+      try {
+        // const optionId = ethers.encodeBytes32String("f1");
+        const param2 = predict ? 1 : 0;
+        const param3 = Number(amount);
+        const returnsVal = await market.getFutureExpectedReturn(
+          optionId,
+          param2,
+          param3
+        );
+
+        console.log("Future expected returns: ", returnsVal.toString());
+        setReturns(returnsVal.toString());
+      } catch (error) {
+        console.error("Error fetching future returns:", error);
+      }
+    } else if (chainId === sapphireTestnet.id) {
       const provider = new ethers.BrowserProvider(
         (await connector?.getProvider()) as any
       );
@@ -261,12 +508,35 @@ const Home = () => {
       );
 
       try {
-        console.log("KALASH LOVES CODING 2");
-        const optionId = ("0x" + "1".padStart(64, "0")) as `0x${string}`;
+        // const optionId = ("0x" + "1".padStart(64, "0")) as `0x${string}`;
         const returnsVal = await market.getFutureExpectedReturn(
           optionId,
           predict ? 1 : 0,
-          amount
+          Number(amount)
+        );
+
+        console.log("Future expected returns: ", returnsVal.toString());
+        setReturns(returnsVal.toString());
+      } catch (error) {
+        console.error("Error fetching Total Bet:", error);
+      }
+    } else {
+      const provider = new ethers.BrowserProvider(
+        (await connector?.getProvider()) as any
+      );
+
+      const market = new ethers.Contract(
+        getMarketContractAddress(chainId!),
+        getMarketABI(chainId!),
+        await provider.getSigner()
+      );
+
+      try {
+        // const optionId = ("0x" + "1".padStart(64, "0")) as `0x${string}`;
+        const returnsVal = await market.getFutureExpectedReturn(
+          optionId,
+          predict ? 1 : 0,
+          Number(amount)
         );
 
         console.log("Future expected returns: ", returnsVal.toString());
