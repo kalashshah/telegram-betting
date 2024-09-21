@@ -5,8 +5,15 @@ import {
 import hre from "hardhat";
 import { bigint } from "hardhat/internal/core/params/argumentTypes";
 
+// SAPHIRE TESTNET
+
 const TOKEN_ADDRESS = "0xA984DBf2Bfa58Fe59B42730450338404B6702973";
 const DEPLOYED_ADDRESS = "0x3915791b77Cf27221334890e4f088E5a6c950054";
+
+// MORPH TESTNET
+const MORPH_TOKEN_ADDRESS = "0x887eca7008180b6e7c0f8904e1ed0c529aa6a84c";
+const MORPH_MARKET_ADDRESS = "0xb150f32383d2a8dbfdcd35b99ce805833560c074";
+
 
 async function deployTokenContract() {
   const [owner, otherAccount] = await hre.viem.getWalletClients();
@@ -18,7 +25,7 @@ async function deployTokenContract() {
 
 async function deployMarketContract() {
   const [owner, otherAccount] = await hre.viem.getWalletClients();
-  const market = await hre.viem.deployContract("Market", [TOKEN_ADDRESS]);
+  const market = await hre.viem.deployContract("Market", [MORPH_TOKEN_ADDRESS]);
   console.log("Market deployed at address", market.address);
 
   return { market, owner, otherAccount };
@@ -117,14 +124,14 @@ async function getFutureExpectedReturn() {
 
 const doThis = async () => {
   // await deployTokenContract();
-  // await deployMarketContract();
+  await deployMarketContract();
   // await buy();
   // await getOption();
   // await approve();
   // await predict();
   // await getPrediction();
   // await getFutureExpectedReturn();
-  await transfer();
+  // await transfer();
 };
 
 doThis();
