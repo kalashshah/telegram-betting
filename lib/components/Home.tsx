@@ -1,17 +1,21 @@
 import { useDynamicContext } from "@dynamic-labs/sdk-react-core";
 import React, { useEffect, useState } from "react";
-import { sapphireTestnet } from "viem/chains";
+import { morphHolesky, sapphireTestnet } from "viem/chains";
 import { useAccount } from "wagmi";
 import * as sapphire from "@oasisprotocol/sapphire-paratime";
 import { ethers } from "ethers";
 import AppBar from "./AppBar";
-import CardComponent from "./Card";
 
 const getTokenContractAddress = (chainId: number) => {
   switch (chainId) {
     case sapphireTestnet.id:
       return "0xA984DBf2Bfa58Fe59B42730450338404B6702973";
 
+    case morphHolesky.id:
+      return "0x887eca7008180b6e7c0f8904e1ed0c529aa6a84c";
+
+    // case 22040:
+    //   return "AIRDAO_TESTNET_ADDRESS";
     default:
       return "";
   }
@@ -32,6 +36,8 @@ const getMarketContractAddress = (chainId: number) => {
     case sapphireTestnet.id:
       return "0x3915791b77Cf27221334890e4f088E5a6c950054";
 
+    case morphHolesky.id:
+      return "0xb150f32383d2a8dbfdcd35b99ce805833560c074";
     default:
       return "";
   }
@@ -122,7 +128,7 @@ const Home = () => {
       );
 
       const token = new ethers.Contract(
-        getTokenContractAddress(chainId),
+        getTokenContractAddress(chainId) as string,
         getTokenABI(chainId),
         await sapphireProvider.getSigner()
       );

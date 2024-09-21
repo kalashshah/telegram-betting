@@ -9,7 +9,7 @@ import Script from "next/script";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { DynamicWagmiConnector } from "@dynamic-labs/wagmi-connector";
 import { createConfig, http, WagmiProvider } from "wagmi";
-import { sapphireTestnet } from "viem/chains";
+import { sapphireTestnet, morphHolesky } from "viem/chains";
 import { defineChain } from "viem";
 
 const dynamicEnvId = process.env.NEXT_PUBLIC_DYNAMIC_ENV_ID;
@@ -38,11 +38,12 @@ const fhenix = defineChain({
 });
 
 const config = createConfig({
-  chains: [sapphireTestnet, fhenix],
+  chains: [sapphireTestnet, fhenix, morphHolesky],
   multiInjectedProviderDiscovery: false,
   transports: {
     [sapphireTestnet.id]: http(),
     [fhenix.id]: http(),
+    [morphHolesky.id]: http(),
   },
 });
 
