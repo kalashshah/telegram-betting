@@ -4,9 +4,14 @@ pragma solidity >=0.8.13 <0.9.0;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
+interface IDisputeResolution {
+    function setVotingSettings(bytes32 id, uint outcome) external;
+}
+
 contract Market {
     address public owner;
     address public token;
+    address public disputeResolver;
 
     struct Option {
         string description;
@@ -35,9 +40,16 @@ contract Market {
         _;
     }
 
-    constructor(address _token) {
+    constructor(address _token, address _disputeResolver) {
         owner = msg.sender;
         token = _token;
+        disputeResolver = _disputeResolver;
+    }
+
+    function resolveDispute(bytes32 id, uint _outcome) external {
+        require(msg.sender == disputeResolver);
+        Option storage option = options[id];
+        option.outcome = _outcome;
     }
 
     function addOption(
@@ -93,6 +105,8 @@ contract Market {
         Option storage option = options[id];
         option.resolved = true;
         option.outcome = _outcome;
+
+        IDisputeResolution(disputeResolver).setVotingSettings(id, _outcome);
     }
 
     function payout(bytes32 id) public {

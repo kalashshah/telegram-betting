@@ -8,11 +8,13 @@ import { bigint } from "hardhat/internal/core/params/argumentTypes";
 // SAPHIRE TESTNET
 
 const TOKEN_ADDRESS = "0xA984DBf2Bfa58Fe59B42730450338404B6702973";
-const DEPLOYED_ADDRESS = "0x3915791b77Cf27221334890e4f088E5a6c950054";
+const DEPLOYED_ADDRESS = "0xc97cCA64bfbd71c521539C34EA2A746c1E5377d7";
+const DisputeResolutionAddress = "0x3C15f3b76861b270c07E70f45F4675A63a8019C3";
 
 // MORPH TESTNET
 const MORPH_TOKEN_ADDRESS = "0x887eca7008180b6e7c0f8904e1ed0c529aa6a84c";
-const MORPH_MARKET_ADDRESS = "0xb150f32383d2a8dbfdcd35b99ce805833560c074";
+const MORPH_MARKET_ADDRESS = "0x142031f4491d108024351144e487a5645482756c";
+const MorphDisputeResolutionAddress = "0xf29c5df16f32ee404d20c8e1a7ac1ecfcfcbd9be";
 
 
 async function deployTokenContract() {
@@ -25,10 +27,16 @@ async function deployTokenContract() {
 
 async function deployMarketContract() {
   const [owner, otherAccount] = await hre.viem.getWalletClients();
-  const market = await hre.viem.deployContract("Market", [MORPH_TOKEN_ADDRESS]);
+  const market = await hre.viem.deployContract("Market", [MORPH_TOKEN_ADDRESS, MorphDisputeResolutionAddress]);
   console.log("Market deployed at address", market.address);
 
   return { market, owner, otherAccount };
+}
+
+async function deployDisputeResolution() {
+  const [owner, otherAccount] = await hre.viem.getWalletClients();
+  const disputeResolution = await hre.viem.deployContract("DisputeResolution",[]);
+  console.log("DisputeResolution deployed at address : ", disputeResolution.address);
 }
 
 async function buy() {
@@ -123,6 +131,7 @@ async function getFutureExpectedReturn() {
 }
 
 const doThis = async () => {
+  // await deployDisputeResolution();
   // await deployTokenContract();
   await deployMarketContract();
   // await buy();

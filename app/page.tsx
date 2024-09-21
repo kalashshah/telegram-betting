@@ -18,6 +18,7 @@ export default function Main() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
+    console.log("hfsfdsfsdfds");
     if (!sdkHasLoaded) return;
 
     const signIn = async () => {
@@ -31,6 +32,7 @@ export default function Main() {
   }, [sdkHasLoaded]);
 
   useEffect(() => {
+    console.log("abcd");
     (async () => {
       if (await primaryWallet?.isConnected()) {
         setIsLoggedIn(true);
@@ -66,9 +68,12 @@ export default function Main() {
             </div>
           ) : (
             <>
-              <h1 className="px-10 mb-10 text-4xl font-bold mb-4 w-full">
-                Welcome to F1 Bets
-              </h1>
+              <div className="flex md:flex-row flex-col items-center justify-between mr-10">
+                <h1 className="px-10 mb-10 text-4xl font-bold mb-4 w-full">
+                  Welcome to F1 Bets
+                </h1>
+                <DynamicWidget />
+              </div>
               <Home />
             </>
           )}

@@ -4,6 +4,8 @@ import { morphHolesky, sapphireTestnet } from "viem/chains";
 import { useAccount } from "wagmi";
 import * as sapphire from "@oasisprotocol/sapphire-paratime";
 import { ethers } from "ethers";
+import Image from "next/image";
+import { notifications } from "@mantine/notifications";
 import AppBar from "./AppBar";
 
 const getTokenContractAddress = (chainId: number) => {
@@ -60,6 +62,19 @@ const Home = () => {
   const [tvl, setTvl] = useState<string>("0");
   const [returns, setReturns] = useState<string>("");
 
+  const [predictLoading, setPredictLoading] = useState<boolean>(false);
+  const [payoutLoading, setPayoutLoading] = useState<boolean>(false);
+
+  const [showModal, setShowModal] = useState(false);
+
+  const handleOpenModal = () => {
+    setShowModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setShowModal(false);
+  };
+
   useEffect(() => {
     getTVL();
   }, [chainId, connector]);
@@ -115,7 +130,7 @@ const Home = () => {
   };
 
   const predictAmount = async () => {
-    if (chainId === sapphireTestnet.id) {
+    if (chainId === sapphireTestnet.id || chainId === morphHolesky.id) {
       const provider = new ethers.BrowserProvider(
         (await connector?.getProvider()) as any
       );
@@ -134,6 +149,7 @@ const Home = () => {
       );
 
       try {
+        setPredictLoading(true);
         const tokenRes = await token.approve(
           getMarketContractAddress(chainId),
           BigInt(amount)
@@ -149,7 +165,9 @@ const Home = () => {
         );
 
         console.log("Place Bet Successful : ", placeBetRes.hash);
+        setPredictLoading(false);
       } catch (error) {
+        setPredictLoading(false);
         console.error("Error fetching Total Bet:", error);
       }
     }
@@ -169,11 +187,15 @@ const Home = () => {
       );
 
       try {
+        setPayoutLoading(true);
         const optionId = ("0x" + "1".padStart(64, "0")) as `0x${string}`;
         const payOutRes = await market.payout(optionId);
 
+        setPayoutLoading(false);
+
         console.log("Place Bet Successful : ", payOutRes.toString());
       } catch (error) {
+        setPayoutLoading(false);
         console.error("Error fetching Total Bet:", error);
       }
     }
@@ -204,7 +226,10 @@ const Home = () => {
   };
 
   const getFutureExpectedReturn = async () => {
-    if (chainId === sapphireTestnet.id) {
+    console.log("KALASH LOVES CODING", chainId);
+
+    if (chainId === sapphireTestnet.id || chainId === morphHolesky.id) {
+      console.log("KALASH LOVES CODING 1");
       const provider = new ethers.BrowserProvider(
         (await connector?.getProvider()) as any
       );
@@ -217,6 +242,7 @@ const Home = () => {
       );
 
       try {
+        console.log("KALASH LOVES CODING 2");
         const optionId = ("0x" + "1".padStart(64, "0")) as `0x${string}`;
         const returnsVal = await market.getFutureExpectedReturn(
           optionId,
@@ -241,86 +267,143 @@ const Home = () => {
   }, [amount]);
 
   return (
-    <div className="w-full h-full px-6flex flex-col items-start justify-start">
-      {[1].map((cardNumber) => (
-        <div
-          className=" ml-10 mr-10 my-10 bg-white shadow-lg rounded-lg overflow-hidden"
-          key={cardNumber}
-        >
-          <div className="p-6 space-y-6">
-            <h1 className="text-3xl font-bold text-gray-800">
-              We are going to win this hackathon?
-            </h1>
+    <div
+      onClick={() => {
+        if (showModal) {
+          setShowModal(false);
+        }
+      }}
+    >
+      <div className="w-full h-full px-6flex flex-col items-start justify-start">
+        {[1].map((cardNumber) => (
+          <div
+            className=" ml-10 mr-10 my-10 bg-white shadow-lg rounded-lg overflow-hidden"
+            key={cardNumber}
+          >
+            <div className="p-6 space-y-6">
+              <Image
+                src="/f1.jpeg"
+                alt="Description of the image"
+                width={500}
+                height={300}
+                priority
+              />
+              <h1 className="text-3xl font-bold text-gray-800">
+                Will Lewis Hamilton win the upcoming race
+              </h1>
 
-            <div className="flex flex-col justify-between gap-2">
-              <div>
-                <label
-                  htmlFor={`amount-${cardNumber}`}
-                  className="block mb-2 font-medium text-gray-700"
-                >
-                  Amount:
-                </label>
-                <input
-                  type="number"
-                  id={`amount-${cardNumber}`}
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                  className="w-full flex p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
-                />
-              </div>
+              <div className="flex flex-col justify-between gap-2">
+                <div>
+                  <label
+                    htmlFor={`amount-${cardNumber}`}
+                    className="block mb-2 font-medium text-gray-700"
+                  >
+                    Place a bet by entering a amount
+                  </label>
+                  <input
+                    type="number"
+                    id={`amount-${cardNumber}`}
+                    value={amount}
+                    onChange={(e) => setAmount(e.target.value)}
+                    className="w-full flex p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
+                  />
+                </div>
 
-              {returns && (
+                {returns && (
+                  <div>
+                    <label className="block mb-2 font-medium text-gray-700">
+                      Expected returns:
+                    </label>
+                    <p className="text-2xl font-semibold text-gray-800">
+                      {returns} MTK
+                    </p>
+                  </div>
+                )}
+
                 <div>
                   <label className="block mb-2 font-medium text-gray-700">
-                    Expected returns:
+                    TVL:
                   </label>
                   <p className="text-2xl font-semibold text-gray-800">
-                    {returns} MTK
+                    {Number(tvl)} MTK
                   </p>
                 </div>
-              )}
-
-              <div>
-                <label className="block mb-2 font-medium text-gray-700">
-                  TVL:
-                </label>
-                <p className="text-2xl font-semibold text-gray-800">
-                  {Number(tvl) + Number(amount)} MTK
-                </p>
               </div>
-            </div>
 
-            <div className="flex space-x-4">
+              <div className="flex space-x-4">
+                <button
+                  onClick={() => setPredict(true)}
+                  className="flex-1 bg-green-600 text-white py-3 px-6 rounded-lg hover:bg-green-700 transition duration-200 font-semibold text-lg"
+                >
+                  {predict != null ? (predict ? "Selected Yes" : "Yes") : "Yes"}
+                </button>
+                <button
+                  onClick={() => setPredict(false)}
+                  className="flex-1 bg-red-600 text-white py-3 px-6 rounded-lg hover:bg-red-700 transition duration-200 font-semibold text-lg"
+                >
+                  {predict != null ? (!predict ? "Selected No" : "No") : "No"}
+                </button>
+              </div>
+
               <button
-                onClick={() => setPredict(true)}
-                className="flex-1 bg-green-600 text-white py-3 px-6 rounded-lg hover:bg-green-700 transition duration-200 font-semibold text-lg"
+                onClick={predictAmount}
+                className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition duration-200 font-semibold text-lg"
               >
-                {predict != null ? (predict ? "Selected Yes" : "Yes") : "Yes"}
+                {!predictLoading ? "Predict" : "Loading"}
               </button>
+
               <button
-                onClick={() => setPredict(false)}
-                className="flex-1 bg-red-600 text-white py-3 px-6 rounded-lg hover:bg-red-700 transition duration-200 font-semibold text-lg"
+                onClick={payOut}
+                className="w-full bg-yellow-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition duration-200 font-semibold text-lg"
               >
-                {predict != null ? (!predict ? "Selected No" : "No") : "No"}
+                {!payoutLoading ? "Payout" : "Loading"}
               </button>
             </div>
+          </div>
+        ))}
+      </div>
 
-            <button
-              onClick={predictAmount}
-              className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition duration-200 font-semibold text-lg"
-            >
-              Predict
-            </button>
+      <div className="pl-10">
+        Feel the results are off?{" "}
+        <span
+          className="text-blue-600 cursor-pointer"
+          onClick={handleOpenModal}
+        >
+          raise a dispute
+        </span>
+      </div>
 
+      {showModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-end items-end">
+          <div className="bg-white w-full p-8 rounded-t-lg shadow-lg">
+            <h1 className="text-black mb-10 font-bold">
+              Dispute Resolution Notice
+            </h1>
+            <p className="text-black font-semibold">
+              If you believe the market outcome is incorrect, you may raise a
+              formal dispute. The case will be reviewed by the DAO. Please
+              provide sufficient evidence when submitting a dispute. The DAO’s
+              decision is final and binding.
+            </p>
+            <h2 className="text-black mb-6 mt-4 font-light">
+              Describe your concern with appropriate proof (if applicable)
+            </h2>
+            <input
+              type="text"
+              id={`dispute`}
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              className="w-full h-20 flex p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
+            />
             <button
-              onClick={payOut}
-              className="w-full bg-yellow-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition duration-200 font-semibold text-lg"
+              className="mt-4 bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+              onClick={handleCloseModal}
             >
-              Payout
+              Raise Dispute
             </button>
           </div>
         </div>
-      ))}
+      )}
     </div>
   );
 };

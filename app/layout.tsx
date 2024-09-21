@@ -37,6 +37,22 @@ const fhenix = defineChain({
   },
 });
 
+const fhenix1 = {
+  blockExplorerUrls: ["https://explorer.helium.fhenix.zone"],
+  chainId: 8008135,
+  chainName: "Fhenix",
+  iconUrls: ["https://app.dynamic.xyz/assets/networks/eth.svg"],
+  name: "Fhenix",
+  networkId: 8008135,
+  nativeCurrency: {
+    decimals: 18,
+    name: "Fhenix",
+    symbol: "tFHE",
+  },
+  rpcUrls: ["https://api.helium.fhenix.zone/"],
+  vanityName: "Fhenix",
+};
+
 const config = createConfig({
   chains: [sapphireTestnet, fhenix, morphHolesky],
   multiInjectedProviderDiscovery: false,
@@ -77,7 +93,6 @@ export default function RootLayout({
         settings={{
           environmentId: dynamicEnvId,
           walletConnectors: [EthereumWalletConnectors],
-          // overrides: { evmNetworks },
         }}
       >
         <WagmiProvider config={config}>
