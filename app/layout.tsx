@@ -10,32 +10,11 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { DynamicWagmiConnector } from "@dynamic-labs/wagmi-connector";
 import { createConfig, http, WagmiProvider } from "wagmi";
 import { sapphireTestnet, morphHolesky } from "viem/chains";
-import { defineChain } from "viem";
+import { fhenix } from "@/lib/fhenix";
 
 const dynamicEnvId = process.env.NEXT_PUBLIC_DYNAMIC_ENV_ID;
 
 const queryClient = new QueryClient();
-
-export const fhenix = defineChain({
-  blockExplorers: {
-    default: {
-      name: "Fhenix Explorer",
-      url: "https://explorer.helium.fhenix.zone",
-    },
-  },
-  id: 8008135,
-  name: "Fhenix Helium",
-  nativeCurrency: {
-    decimals: 18,
-    name: "Fhenix",
-    symbol: "tFHE",
-  },
-  rpcUrls: {
-    default: {
-      http: ["https://api.helium.fhenix.zone/"],
-    },
-  },
-});
 
 const fhenix1 = {
   blockExplorerUrls: ["https://explorer.helium.fhenix.zone"],

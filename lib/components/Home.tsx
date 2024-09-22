@@ -7,9 +7,9 @@ import { BrowserProvider, ethers, JsonRpcProvider, keccak256 } from "ethers";
 import Image from "next/image";
 import { notifications } from "@mantine/notifications";
 import AppBar from "./AppBar";
-import { fhenix } from "@/app/layout";
 import { EncryptionTypes, FhenixClient, SupportedProvider } from "fhenixjs";
 import { toHex } from "viem";
+import { fhenix } from "../fhenix";
 
 const getTokenContractAddress = (chainId: number) => {
   switch (chainId) {
@@ -84,7 +84,7 @@ const Home = () => {
   const [payoutLoading, setPayoutLoading] = useState<boolean>(false);
 
   const [showModal, setShowModal] = useState(false);
-  const optionId = ethers.encodeBytes32String("pqivxp");
+  const optionId = ethers.encodeBytes32String("b1p9t");
 
   const handleOpenModal = () => {
     setShowModal(true);
@@ -245,10 +245,10 @@ const Home = () => {
       //   (await connector?.getProvider()) as any
       // ) as SupportedProvider;
 
-      const provider = new ethers.BrowserProvider(window.ethereum);
+      const provider = new ethers.BrowserProvider(window.ethereum!);
 
       // initialize Fhenix Client
-      const client = new FhenixClient({ provider });
+      const client = new FhenixClient({ provider: provider as any });
 
       const market = new ethers.Contract(
         getMarketContractAddress(chainId),
